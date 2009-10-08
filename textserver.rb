@@ -8,12 +8,24 @@ require 'tmpdir'
 require 'yaml'
 require 'nkf'
 require 'getopt'
+require 'file/observer'
+require 'invoke'
+require 'rbcommand'
+
+class String
+  def to_utf8
+    return NKF.nkf('-w', self)
+  end
+end
+
+# options
 
 dargs = {
   :config => File.join(File.dirname($0), "#{File.basename($0, '.*')}.yml"),
 }
 args = GetOpt.new($*, %w'
   stop
+  reset
   c|config=s
   help
 ', dargs)
@@ -30,8 +42,8 @@ Default Configuration File:
 Configurations:
   :dir       A directory to put :text, :last, :feedback.
   :text      A file which will be send to textarea in a browser.
-  :last      Indicator of modification time.
-  :feedback  Contents of textarea in a browser will be stored here.
+  :reset     A file to receive reset signal.
+  :lock      Lock file.
   :logfile   Log file.
   :loglevel  Log level, minimum 0 (no log) to maximum 5 (debug log).
   :server    WEBrick server options.
@@ -42,8 +54,8 @@ end
 $conf = {
   :dir      => Dir.tmpdir,
   :text     => 'text',
-  :last     => 'last',
-  :feedback => 'feedback',
+  :reset    => 'reset',
+  :lock     => 'lock',
   :logfile  => STDOUT,
   :loglevel => 0,
   :server   => {
@@ -59,58 +71,70 @@ if args[:config] && File.exist?(args[:config])
 end
 $conf[:pid] ||= File.join($conf[:dir], File.basename($0, '.*') + '.pid')
 
+$lock = File.join($conf[:dir], $conf[:lock])
+File.unlink($lock) if File.exist?($lock)
+
+$text = File.join($conf[:dir], $conf[:text])
+open($text,'wb'){|io|} unless File.exist?($text)
+
+# stop method
+
+args[:stop] = args[:stop] || (args.args + args.rest).include?('stop')
 if args[:stop]
-  url = "http://#{$conf[:server][:BindAddress]}:#{$conf[:server][:Port]}/stop"
-  open(url){}
+  IO.foreach($conf[:pid]) do |line|
+      Process.kill(:KILL, line.strip.to_i) if line.strip.length > 0
+  end
+  open($conf[:pid], 'wb'){|io| io.puts('')}
   exit
 end
 
-class String
-  def to_utf8
-    return NKF.nkf('-w', self)
-  end
+# daemon
+
+if args[:reset]
+  $conf[:server][:Port] = $conf[:server][:Port]+1
+else
+  rargs = []
+  rargs += [ '-c', args[:config] ] if args[:config]
+  rargs << '--reset'
+  resetserver = RbConfig.self_invoke_command + ' ' + rargs.join(' ')
+  pid = Process.invoke(resetserver).process_id
+  open($conf[:pid], 'wb'){|io| io.puts(Process.pid); io.puts(pid)}
+  require 'webrick/single_thread_server'
 end
 
-class Last
-  attr_reader :time
+srv = WEBrick::HTTPServer.new($conf[:server])
 
-  def initialize(file)
-    @file = file
-    @time = Time.at(0).utc
-    if File.exist?(@file)
-      begin
-        @time = Time.iso8601(IO.read(@file).strip).utc
-      rescue
-        # just leave it
-      end
+srv.mount_proc('/') do |req, res|
+  open($lock, 'wb'){|io| io.puts(Time.now.utc.iso8601)}
+
+  last = File.mtime($text)
+  res.content_type = 'text/plain; charset=utf-8'
+  res.status = WEBrick::HTTPStatus::RC_NO_CONTENT
+
+  File::Observer.watch_dir($conf[:dir], File::Observer::CHANGE) do
+    if File.mtime($text) != last
+      res.body = IO.read($text).to_utf8
+      res.status = WEBrick::HTTPStatus::RC_OK
     end
   end
 
-  def update(time = nil)
-    File.open(@file, 'wb'){|io| io.puts((time || Time.now.utc).iso8601)}
-  end
+  File.unlink($lock)
 end
 
-$text = File.join($conf[:dir], $conf[:text])
-open(text,'wb'){|io|} unless File.exist?($text)
-
-srv = WEBrick::HTTPServer.new($conf[:server])
-srv.mount_proc('/') do |req, res|
-  last = Last.new(File.join($conf[:dir], $conf[:last]))
-  modified = File.mtime($text).utc
+srv.mount_proc('/lock') do |req, res|
   res.content_type = 'text/plain; charset=utf-8'
-  if last.time < modified
-    res.body = IO.read($text).to_utf8
-    last.update(modified)
-  else
-    res.status = 204
+  res.status = WEBrick::HTTPStatus::RC_NO_CONTENT
+  if File.exist?($lock)
+    res.status = WEBrick::HTTPStatus::RC_OK
   end
 end
-srv.mount_proc('/feedback') do |req, res|
-  res.content_type = 'text/plain'
-  text = req.body || ''
-  text = text.strip.to_utf8
-  open(File.join($conf[:dir], $conf[:feedback]), 'wb'){|io| io.puts(text)}
+
+srv.mount_proc('/reset') do |req, res|
+  open(File.join($conf[:dir], $conf[:reset]), 'wb') do |io|
+    io.puts((req.body || '').strip.to_utf8)
+  end
+  res.content_type = 'text/plain; charset=utf-8'
+  res.status = WEBrick::HTTPStatus::RC_OK
 end
-srv.mount_proc('/stop'){ srv.stop }
+
 srv.start

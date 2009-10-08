@@ -6,17 +6,20 @@
 // ==/UserScript==
 
 (function() {
-    var version = '1.00';
+    var version = '2.00';
     GM_setValue('Version', version);
 
     var host = GM_getValue('TextServer:host', 'localhost');
-    var port = { text: GM_getValue('TextServer:textPort', 18080) };
+    var port = {};
+    port.text = GM_getValue('TextServer:textPort', 18080);
+    port.reset = GM_getValue('TextServer:resetPort', port.text+1);
 
     var Logger = function() {
         return {
             info: function(name, val) {
                 console.log([
                     [ name, val+':'+GM_getValue('OwnerDocumentID', 0) ],
+                    [ 'r', GM_getValue('TextServer:reset', 0) ],
                 ].map(function(v){ return v[0]+':'+v[1]; }).join('|'));
             },
         };
@@ -77,20 +80,6 @@
         return self;
     };
 
-    var Feedback = function(remote) {
-        var self = { last: '' };
-        self.ignore = function(text) {
-            self.last = text;
-        };
-        self.send = function(text) {
-            if (text != null && text != self.last) {
-                self.ignore(text);
-                remote.post('/feedback', text, function(){});
-            }
-        };
-        return self;
-    };
-
     var Remote = function(domain) {
         var self = {};
         self.send = function(method, page, data, callback) {
@@ -115,37 +104,93 @@
         return self;
     };
 
-    var Server = function(wnd, doc, host, port, active, inactive) {
-        var remote = new Remote('http://'+host+':'+port.text);
+    var Server = function(wnd, doc, host, port, logger) {
+        var Connection = function(host, port, logger) {
+            var remote = function(host, port) {
+                return new Remote('http://'+host+':'+port);
+            };
+            var self = { host: host, port: port };
+            self.reset = function(text, callback) {
+                logger.info('reset', 'request');
+                remote(host, port.reset).post('/reset', text, function(r) {
+                    logger.info('reset', r.status);
+                    callback(r);
+                });
+            };
+            self.lock = function(callback) {
+                remote(host, port.reset).get('/lock', function(r) {
+                    callback(r);
+                });
+            };
+            self.polling = function(callback) {
+                logger.info('polling', 'request');
+                remote(host, port.text).get('/', function(r) {
+                    logger.info('polling', r.status);
+                    return callback(r);
+                });
+            };
+            return self;
+        };
         var owner = new Owner(doc);
         var textarea = new TextArea(doc);
-        var feedback = new Feedback(remote);
-        var self = {
-            remote: remote,
-            owner: owner,
-            textarea: textarea,
-            feedback: feedback,
-        };
-        self.loop = function() {
-            if (owner.hasOwnership()) {
-                feedback.send(textarea.getText());
-                remote.get('/', function(r) {
+        var con = new Connection(host, port, logger);
+        var self = { owner: owner, textarea: textarea, con: con };
+        self.start = function(){ self.reset(); };
+        self.listen = function() {
+            con.polling(function(r) {
+                if (owner.hasOwnership() && r.status != 204) {
                     if (r.status == 200) {
                         text = r.responseText;
                         textarea.setText(text);
-                        feedback.ignore(text);
                     }
-                    setTimeout(function(){ self.loop(); }, active);
-                });
-            } else {
-                setTimeout(function(){ self.loop(); }, inactive);
-            }
+                    self.listen();
+                }
+            });
         };
-        self.start = function() {
-            self.loop();
+        self._reset = function(id, count) {
+            var t = 3000;
+            var w = 100;
+            count = count || 0;
+            con.lock(function(r) {
+                var last = GM_getValue('TextServer:reset', '0');
+                if (+last <= id && owner.hasOwnership()) {
+                    if (r.status == 204) {
+                        self.listen();
+                    } else if (t/w <= count) {
+                        self.reset(); // respawn
+                    } else {
+                        setTimeout(function(){ self._reset(id, count); }, w);
+                    }
+                } else {
+                    logger.info('die', id+'');
+                }
+            });
         };
+        self.reset = function() {
+            owner.update();
+            var id = Date.now();
+            GM_setValue('TextServer:reset', id+'');
+            con.reset(textarea.getText(), function() {
+                self._reset(id);
+            });
+        };
+        doc.addEventListener('focus', function(e) {
+            self.reset();
+        }, false);
+        Array.forEach(textarea.enumerate(), function(v) {
+            v.addEventListener('focus', function(e) {
+                self.reset();
+            }, false);
+            v.addEventListener('keyup', function(e) {
+                setTimeout(function() {
+                    if (owner.hasOwnership()) {
+                        self.reset();
+                    }
+                }, 800);
+            }, false);
+        });
         return self;
     };
 
-    new Server(window, document, host, port, 500, 1000).start();
+    new Server(window, document, host, port, logger).start();
 })();
