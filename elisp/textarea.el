@@ -16,7 +16,8 @@
   (interactive)
   (textarea)
   (kill-region (point-min) (point-max))
-  (insert-file-contents (join-to-string "/" (list textarea-dir "feedback"))))
+  (insert-file-contents (mapconcat
+                         'identity (list textarea-dir "feedback") "/")))
 
 (defadvice revert-buffer
   (around textarea-revert first activate)
