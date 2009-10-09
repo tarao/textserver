@@ -9,7 +9,14 @@
 (defun textarea-auto-save-buffer ()
   (interactive)
   (let ((buffer (get-buffer "*textarea*")))
-    (if buffer (auto-save-buffer buffer))))
+    (when buffer
+      (save-excursion
+        (set-buffer buffer)
+        (if (and buffer-file-name
+                 (buffer-modified-p)
+                 (not buffer-read-only)
+                 (file-writable-p buffer-file-name))
+            (save-buffer))))))
 (run-with-idle-timer 3 t 'textarea-auto-save-buffer)
 
 (defun textarea-import ()
