@@ -63,7 +63,7 @@
         self.getInput = function() {
             var elm = doc.activeElement;
             var re = new RegExp(tags.join('|'));
-            if (re.test(elm.tagName)) return elm;
+            if (elm && re.test(elm.tagName)) return elm;
             return tags.reduce(function(p,c) {
                 return p || doc.getElementsByTagName(c)[0];
             }, null);
@@ -157,12 +157,13 @@
                     if (r.status == 204) {
                         self.listen();
                     } else if (t/w <= count) {
+                        logger.info('respawn', id+'');
                         self.reset(); // respawn
                     } else {
                         setTimeout(function(){ self._reset(id, count); }, w);
                     }
                 } else {
-                    logger.info('die', id+'');
+                    logger.info('die' + (+last <= id ? ' (recent)':''), id+'');
                 }
             });
         };
