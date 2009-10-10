@@ -4,7 +4,7 @@
   (interactive)
   (find-file (mapconcat 'identity (list textarea-dir "text") "/"))
   (funcall initial-major-mode)
-  (make-variable-buffer-local 'make-backup-file)
+  (make-variable-buffer-local 'make-backup-files)
   (setq make-backup-files nil)
   (auto-save-mode 0)
   (rename-buffer "*textarea*"))
