@@ -92,12 +92,13 @@ end
 
 if args[:reset]
   $conf[:server][:Port] = $conf[:server][:Port]+1
+  open($conf[:pid], 'ab'){|io| io.puts(Process.pid)}
 else
   resetserver = [ RbConfig.self_invoke_command ]
   resetserver += [ '-c', args[:config] ] if args[:config]
   resetserver << '--reset'
-  pid = Process.invoke(resetserver.join(' ')).process_id
-  open($conf[:pid], 'wb'){|io| io.puts(Process.pid); io.puts(pid)}
+  open($conf[:pid], 'wb'){|io| io.puts(Process.pid)}
+  Process.invoke(resetserver.join(' '))
   require 'webrick/single_thread_server'
 end
 
