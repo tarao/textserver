@@ -27,7 +27,7 @@ class File
         return self
       end
 
-      def self.watch(fname, events, dir = false)
+      def self.watch(files, events, dir = false)
         mask = 0
         # FIXME: more events
 #        mask |= ::Win32::ChangeNotify::ATTRIBUTES if (events & ATTRIB) != 0
@@ -35,15 +35,15 @@ class File
         mask |= ::Win32::ChangeNotify::FILE_NAME  if (events & MOVE) != 0
         mask |= ::Win32::ChangeNotify::LAST_WRITE if (events & CHANGE) != 0
         mask |= ::Win32::ChangeNotify::SIZE       if (events & CHANGE) != 0
-        fname = File.dirname(fname) unless dir
-        cn = ::Win32::ChangeNotify.new(fname, false, mask)
+        files = File.dirname(files.first) unless dir
+        cn = ::Win32::ChangeNotify.new(files, false, mask)
         loop do
           cn.wait do |arr|
             arr.each do |st|
-              if dir || st.file_name == fname
+              if dir || files.find{|f| f == st.file_name}
                 # FIXME: convert st.action to event
                 sleep(0.1)
-                yield({ :name => fname, :event => events })
+                yield({ :name => st.file_name, :event => events })
                 return true
               end
             end
@@ -67,12 +67,12 @@ class File
         return self
       end
 
-      def self.watch(fname, events)
+      def self.watch(files, events)
         notifier = ::Inotify.new
         begin
-          notifier.add_watch(fname, events)
+          files.each{|f| notifier.add_watch(f, events)}
           notifier.each_event do |e|
-            yield({ :fname => fname, :event => e.mask })
+            yield({ :event => e.mask })
             return true
           end
         ensure
@@ -91,15 +91,14 @@ class File
         return Naive
       end
 
-      def self.watch(fname, events, s=0.1)
-        mtime = File.mtime(fname)
-        obs = []
-        # FIXME: more events
-        obs.push(proc{|f| File.mtime(f) != mtime}) if (events & CHANGE) != 0
-        return false unless obs.length > 0
+      def self.watch(files, events, s=0.1)
+        mtime = {}
+        files.each{|f| mtime[f] = File.mtime(f)}
 
         loop do
-          if obs.any?{|p| p.call(fname)}
+          # FIXME: other events
+          fname = files.find{|f| File.mtime(f) != mtime[f]}
+          if fname
             yield({ :name => fname, :event => events })
             return true
           end
@@ -113,10 +112,18 @@ class File
       end
     end
 
-    def self.watch(fname, events, &block)
-      klass = Win32.installed? || Inotify.installed? || Naive.installed?
+    def self.watch(files, events, &block)
+#       klass = Win32.installed? || Inotify.installed? || Naive.installed?
+      klass = Win32.installed? || Naive.installed?
       raise 'No file observer' unless klass
-      return klass.watch(fname, events, &block)
+      files = [files] unless files.is_a?(Array)
+      mtime = {}
+      files.each{|f| mtime[f] = File.mtime(f)}
+      return klass.watch(files, events) do |x|
+        # FIXME: other events
+        x[:name] = x[:name] || files.find{|f| File.mtime(f) != mtime[f]}
+        block.call(x)
+      end
     end
 
     def self.watch_dir(dir, events, &block)

@@ -77,6 +77,8 @@ File.unlink($lock) if File.exist?($lock)
 $text = File.join($conf[:dir], $conf[:text])
 open($text,'wb'){|io|} unless File.exist?($text)
 
+$reset = File.join($conf[:dir], $conf[:reset])
+
 # stop method
 
 args[:stop] = args[:stop] || (args.args + args.rest).include?('stop')
@@ -107,12 +109,11 @@ srv = WEBrick::HTTPServer.new($conf[:server])
 srv.mount_proc('/') do |req, res|
   open($lock, 'wb'){|io| io.puts(Time.now.utc.iso8601)}
 
-  last = File.mtime($text)
   res.content_type = 'text/plain; charset=utf-8'
   res.status = WEBrick::HTTPStatus::RC_NO_CONTENT
 
-  File::Observer.watch_dir($conf[:dir], File::Observer::CHANGE) do
-    if File.mtime($text) != last
+  File::Observer.watch([$reset, $text], File::Observer::CHANGE) do |x|
+    if x[:name] == $text
       res.body = IO.read($text).to_utf8
       res.status = WEBrick::HTTPStatus::RC_OK
     end
@@ -130,7 +131,7 @@ srv.mount_proc('/lock') do |req, res|
 end
 
 srv.mount_proc('/reset') do |req, res|
-  open(File.join($conf[:dir], $conf[:reset]), 'wb') do |io|
+  open($reset, 'wb') do |io|
     io.puts((req.body || '').strip.to_utf8)
   end
   res.content_type = 'text/plain; charset=utf-8'
