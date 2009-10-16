@@ -1,4 +1,4 @@
-#! /usr/bin/ruby
+#! /usr/bin/env ruby
 $:.unshift(File.dirname($0))
 $:.unshift(File.join(File.dirname($0), 'lib'))
 require 'webrick'
@@ -44,6 +44,7 @@ Configurations:
   :text      A file which will be send to textarea in a browser.
   :reset     A file to receive reset signal.
   :lock      Lock file.
+  :pid       A file to save PIDs.
   :logfile   Log file.
   :loglevel  Log level, minimum 0 (no log) to maximum 5 (debug log).
   :server    WEBrick server options.
