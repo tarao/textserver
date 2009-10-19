@@ -9,8 +9,8 @@ require 'yaml'
 require 'nkf'
 require 'getopt'
 require 'file/observer'
-require 'invoke'
-require 'rbcommand'
+require 'process/invoke'
+require 'rbconfig/command'
 
 class String
   def to_utf8
