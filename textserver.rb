@@ -150,9 +150,7 @@ srv.mount_proc('/lock') do |req, res|
 end
 
 srv.mount_proc('/reset') do |req, res|
-  open($reset, 'wb') do |io|
-    io.puts((req.body || '').strip.to_utf8)
-  end
+  FileUtils.touch($reset)
   res.content_type = 'text/plain; charset=utf-8'
   res.status = WEBrick::HTTPStatus::RC_OK
 end
