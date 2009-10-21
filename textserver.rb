@@ -131,6 +131,7 @@ listen = proc do |req, res|
   res.status = WEBrick::HTTPStatus::RC_NO_CONTENT
 
   File::Observer.watch([$reset, $text], File::Observer::CHANGE) do |x|
+    sleep(0.1)
     if x[:name] == $text
       res.body = IO.read($text).to_utf8
       res.status = WEBrick::HTTPStatus::RC_OK
