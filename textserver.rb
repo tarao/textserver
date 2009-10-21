@@ -89,6 +89,7 @@ open($text,'wb'){|io|} unless File.exist?($text)
 
 $reset = File.join($conf[:dir], $conf[:reset])
 open($reset, 'wb'){|io|} unless File.exist?($reset)
+$last = ''
 
 # stop method
 
@@ -151,7 +152,13 @@ srv.mount_proc('/lock') do |req, res|
 end
 
 srv.mount_proc('/reset') do |req, res|
-  FileUtils.touch($reset)
+  body = (req.body || '').strip.to_utf8
+  if body.length >= 0 && $last != body
+    open($reset, 'wb'){|io| io.puts(body)}
+    $last = body
+  else
+    FileUtils.touch($reset)
+  end
   res.content_type = 'text/plain; charset=utf-8'
   res.status = WEBrick::HTTPStatus::RC_OK
 end
