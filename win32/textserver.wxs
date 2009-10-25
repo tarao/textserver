@@ -44,7 +44,6 @@
       <File Id="textserver.yml" Name="textserver.yml"
             Source="dist/textserver.yml" />
     </Component>
-    <Property Id="TEXTSERVER_EXECUTABLE" Value="textserver.exe" />
 
     <Component Id="TempDir" Directory="TempDir"
                Guid="1671B403-C022-474d-9429-32555D0B4E29">
@@ -57,7 +56,6 @@
       <RemoveFile Id="pid" On="uninstall" Name="textserver.pid" />
       <RemoveFolder Id="TempDir" On="uninstall" />
     </Component>
-    <Property Id="TEXTSERVER_EDIT" Value="text.txt" />
 
     <Component Id="ProgramMenuDir" Directory="ProgramMenuDir"
                Guid="C3A3E604-55DE-4615-86CF-18262D3D8BDF">
