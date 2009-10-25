@@ -115,7 +115,7 @@ if argv[:reset]
   end
 else
   resetserver = [ RbConfig.self_invoke_command ]
-  resetserver += [ '-c', argv[:config] ] if argv[:config]
+  resetserver += [ '-c', argv[:config].sub(/.*\s.*/m,'"\&"') ] if argv[:config]
   resetserver << '--test' if argv[:test]
   resetserver << '--reset'
   open($conf[:pid], 'wb'){|io| io.puts(Process.pid)} unless argv[:test]

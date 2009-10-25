@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Name="textserver"
+           Id="C5007942-A8DD-4d95-9D4C-716E6743594D"
+           UpgradeCode="0D73194B-30C1-48ca-9D85-0900EC8D3CE7"
+           Language="1033" Codepage="1252" Version="1.0.0"
+           Manufacturer="orezdnu.org">
+
+    <!-- Package -->
+
+    <Package Id="*" Keywords="Installer" Description="textserver installer"
+             Comments="Notify changes of text file via HTTP long-polling."
+             Manufacturer="orezdnu.org" InstallerVersion="100"
+             Languages="1033" Compressed="yes" SummaryCodepage="1252" />
+    <Media Id="1" Cabinet="textserver.cab" EmbedCab="yes" />
+
+    <!-- Directory -->
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLDIR" Name="textserver" />
+      </Directory>
+
+      <Directory Id="TempFolder">
+        <Directory Id="TempDir" Name="textserver" />
+      </Directory>
+
+      <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="ProgramMenuDir" Name="textserver" />
+      </Directory>
+
+      <Directory Id="StartupFolder" Name="Startup" />
+
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+
+    <!-- Component -->
+
+    <Component Id="MainExecutable" Directory="INSTALLDIR"
+               Guid="D1DE6CAE-0EFE-47c3-82CB-3BDF648B7545">
+      <File Id="textserver.exe" Name="textserver.exe"
+            Source="dist/textserver.exe" KeyPath="yes">
+      </File>
+      <File Id="textserver.yml" Name="textserver.yml"
+            Source="dist/textserver.yml" />
+    </Component>
+    <Property Id="TEXTSERVER_EXECUTABLE" Value="textserver.exe" />
+
+    <Component Id="TempDir" Directory="TempDir"
+               Guid="1671B403-C022-474d-9429-32555D0B4E29">
+      <File Id="text.txt" Name="text.txt"
+            Source="dist/text.txt" KeyPath="yes">
+      </File>
+      <RemoveFile Id="text" On="uninstall" Name="text.txt" />
+      <RemoveFile Id="reset" On="uninstall" Name="reset.txt" />
+      <RemoveFile Id="lock" On="uninstall" Name="lock" />
+      <RemoveFile Id="pid" On="uninstall" Name="textserver.pid" />
+      <RemoveFolder Id="TempDir" On="uninstall" />
+    </Component>
+    <Property Id="TEXTSERVER_EDIT" Value="text.txt" />
+
+    <Component Id="ProgramMenuDir" Directory="ProgramMenuDir"
+               Guid="C3A3E604-55DE-4615-86CF-18262D3D8BDF">
+      <Shortcut Id="ProgramDaemon" Name="textserver"
+                Target="[INSTALLDIR]textserver.exe"
+                WorkingDirectory="INSTALLDIR"
+                Icon="textserver.exe" IconIndex="0" />
+      <Shortcut Id="ProgramEditText" Name="textarea"
+                Target="[TempDir]text.txt"
+                WorkingDirectory="TempDir" />
+      <RemoveFolder Id="ProgramMenuDir" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]"
+                     Name="ProgramMenu" Type="integer" Value="1"
+                     KeyPath="yes" />
+    </Component>
+
+    <Component Id="Desktop" Directory="DesktopFolder"
+               Guid="F24F02DC-54BE-4d3c-8F48-7AB6F00FE04B">
+      <Shortcut Id="DesktopEditText" Name="textarea"
+                Target="[TempDir]text.txt"
+                WorkingDirectory="TempDir" />
+      <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]"
+                     Name="EditText" Type="integer" Value="1"
+                     KeyPath="yes" />
+    </Component>
+
+    <Component Id="Startup" Directory="StartupFolder"
+               Guid="3044BA5B-2473-4326-AABA-9ED2D9C47710">
+      <Shortcut Id="StartupDaemon" Name="textserver"
+                Target="[INSTALLDIR]textserver.exe"
+                WorkingDirectory="INSTALLDIR"
+                Icon="textserver.exe" IconIndex="0" />
+      <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]"
+                     Name="Startup" Type="integer" Value="1"
+                     KeyPath="yes" />
+    </Component>
+
+    <Icon Id="textserver.exe" SourceFile="dist/textserver.exe" />
+
+    <!-- Feature -->
+
+    <Feature Id="default" Title="textserver" Level="1"
+             Description="The complete package."
+             ConfigurableDirectory="INSTALLDIR"
+             AllowAdvertise="no">
+
+      <Feature Id="MainExecutable" Title="daemon" Level="1"
+               Description="The textserver executable and settings."
+               Absent="disallow" AllowAdvertise="no">
+        <ComponentRef Id="MainExecutable" />
+        <ComponentRef Id="TempDir" />
+      </Feature>
+
+      <Feature Id="Shortcuts" Title="shortcuts" Level="1"
+               Description="Useful shortcuts."
+               AllowAdvertise="no">
+        <Feature Id="Program" Title="program" Level="1"
+                 Description="Shortcuts in the program menu."
+                 AllowAdvertise="no">
+          <ComponentRef Id="ProgramMenuDir" />
+        </Feature>
+
+        <Feature Id="Desktop" Title="desktop" Level="1"
+                 Description="A shortcut on the desktop to edit text."
+                 AllowAdvertise="no">
+          <ComponentRef Id="Desktop" />
+        </Feature>
+
+        <Feature Id="Startup" Title="startup" Level="1"
+                 Description="Register textserver to the startup menu."
+                 AllowAdvertise="no">
+          <ComponentRef Id="Startup" />
+        </Feature>
+      </Feature>
+    </Feature>
+
+    <!-- UI -->
+
+    <UIRef Id="WixUI_Common" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+
+    <!-- cpied from WixUI_FeatureTree.wxs -->
+    <UI>
+      <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
+      <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
+      <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" />
+
+      <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
+
+      <DialogRef Id="ErrorDlg" />
+      <DialogRef Id="FatalError" />
+      <DialogRef Id="FilesInUse" />
+      <DialogRef Id="MsiRMFilesInUse" />
+      <DialogRef Id="PrepareDlg" />
+      <DialogRef Id="ProgressDlg" />
+      <DialogRef Id="ResumeDlg" />
+      <DialogRef Id="UserExit" />
+
+      <Publish Dialog="ExitDialog" Control="Finish"
+               Event="EndDialog" Value="Return" Order="999">
+        1
+      </Publish>
+
+      <Publish Dialog="WelcomeDlg" Control="Next"
+               Event="NewDialog" Value="CustomizeDlg">
+        1
+      </Publish>
+
+      <Publish Dialog="CustomizeDlg" Control="Back"
+               Event="NewDialog" Value="MaintenanceTypeDlg" Order="1">
+        Installed
+      </Publish>
+      <Publish Dialog="CustomizeDlg" Control="Back"
+               Event="NewDialog" Value="WelcomeDlg" Order="2">
+        NOT Installed
+      </Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next"
+               Event="NewDialog" Value="VerifyReadyDlg">
+        1
+      </Publish>
+
+      <Publish Dialog="VerifyReadyDlg" Control="Back"
+               Event="NewDialog" Value="CustomizeDlg" Order="1">
+        NOT Installed OR WixUI_InstallMode = "Change"
+      </Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back"
+               Event="NewDialog" Value="MaintenanceTypeDlg" Order="2">
+        Installed
+      </Publish>
+
+      <Publish Dialog="MaintenanceWelcomeDlg" Control="Next"
+               Event="NewDialog" Value="MaintenanceTypeDlg">
+        1
+      </Publish>
+
+      <Publish Dialog="MaintenanceTypeDlg" Control="ChangeButton"
+               Event="NewDialog" Value="CustomizeDlg">
+        1
+      </Publish>
+      <Publish Dialog="MaintenanceTypeDlg" Control="RepairButton"
+               Event="NewDialog" Value="VerifyReadyDlg">
+        1
+      </Publish>
+      <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton"
+               Event="NewDialog" Value="VerifyReadyDlg">
+        1
+      </Publish>
+      <Publish Dialog="MaintenanceTypeDlg" Control="Back"
+               Event="NewDialog" Value="MaintenanceWelcomeDlg">
+        1
+      </Publish>
+    </UI>
+  </Product>
+</Wix>
