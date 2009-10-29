@@ -143,6 +143,20 @@
     <CustomAction Id="InstallUserJS" BinaryKey="WixCA"
                   DllEntry="WixShellExec" Impersonate="yes" />
 
+    <CustomAction Id="RunDaemon" FileKey="textserver.exe" ExeCommand=""
+                  Return="asyncNoWait" />
+    <CustomAction Id="StopDaemon" FileKey="textserver.exe" ExeCommand="--stop"
+                  Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="RunDaemon" After="InstallFinalize">
+        $Startup = 3
+      </Custom>
+      <Custom Action="StopDaemon" After="CostFinalize">
+        Installed AND (?Startup = 3)
+      </Custom>
+    </InstallExecuteSequence>
+
     <!-- UI -->
 
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT"
