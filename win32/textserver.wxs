@@ -63,8 +63,7 @@
                Guid="C3A3E604-55DE-4615-86CF-18262D3D8BDF">
       <Shortcut Id="ProgramDaemon" Name="!(loc.ProgramDaemon_Name)"
                 Target="[INSTALLDIR]textserver.exe"
-                WorkingDirectory="INSTALLDIR"
-                Icon="textserver.exe" IconIndex="0" />
+                WorkingDirectory="INSTALLDIR" />
       <Shortcut Id="ProgramEditText" Name="!(loc.ProgramEditText_Name)"
                 Target="[TempDir]text.txt"
                 WorkingDirectory="TempDir" />
@@ -88,14 +87,11 @@
                Guid="3044BA5B-2473-4326-AABA-9ED2D9C47710">
       <Shortcut Id="StartupDaemon" Name="!(loc.StartupDaemon_Name)"
                 Target="[INSTALLDIR]textserver.exe"
-                WorkingDirectory="INSTALLDIR"
-                Icon="textserver.exe" IconIndex="0" />
+                WorkingDirectory="INSTALLDIR" />
       <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]"
                      Name="Startup" Type="integer" Value="1"
                      KeyPath="yes" />
     </Component>
-
-    <Icon Id="textserver.exe" SourceFile="dist/textserver.exe" />
 
     <!-- Feature -->
 
