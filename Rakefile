@@ -93,7 +93,7 @@ task :win32bin => [ EXE ]
 
 # binary
 file EXE => [ DIST, EXY ] do |t|
-  sh "exerb -o #{EXE} #{EXY}"
+  sh "exerb -c gui -o #{EXE} #{EXY}"
 end
 
 # recipe
