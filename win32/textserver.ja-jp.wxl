@@ -28,4 +28,7 @@
   <String Id="FeatureStartup_Title">スタートアップ</String>
   <String Id="FeatureStartup_Description">textserverをスタートアップに登録します。
 インストール終了後に自動的にtextserverを開始します。</String>
+
+  <String Id="InstallUserJS">Firefox Greasemonkey用のユーザスクリプトを開く。</String>
+  <String Id="UserJSURL">http://github.com/tarao/textserver/raw/master/retrieve-remote-text.user.js</String>
 </WixLocalization>

@@ -136,7 +136,17 @@
       </Feature>
     </Feature>
 
+    <!-- actions -->
+
+    <Property Id="WixShellExecTarget"
+              Value="!(loc.UserJSURL)" />
+    <CustomAction Id="InstallUserJS" BinaryKey="WixCA"
+                  DllEntry="WixShellExec" Impersonate="yes" />
+
     <!-- UI -->
+
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT"
+              Value="!(loc.InstallUserJS)" />
 
     <UIRef Id="WixUI_Common" />
     <UIRef Id="WixUI_ErrorProgressText" />
@@ -161,6 +171,10 @@
       <Publish Dialog="ExitDialog" Control="Finish"
                Event="EndDialog" Value="Return" Order="999">
         1
+      </Publish>
+      <Publish Dialog="ExitDialog" Control="Finish"
+               Event="DoAction" Value="InstallUserJS">
+        NOT Installed AND WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1
       </Publish>
 
       <Publish Dialog="WelcomeDlg" Control="Next"

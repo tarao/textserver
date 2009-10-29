@@ -28,4 +28,7 @@ This feature is required.</String>
   <String Id="FeatureStartup_Title">startup</String>
   <String Id="FeatureStartup_Description">Register textserver daemon to the startup menu.
 The daemon will automatically be running after the installation.</String>
+
+  <String Id="InstallUserJS">Open user script for Firefox Greasemonkey.</String>
+  <String Id="UserJSURL">http://github.com/tarao/textserver/raw/master/retrieve-remote-text.user.js</String>
 </WixLocalization>

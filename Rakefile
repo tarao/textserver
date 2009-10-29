@@ -70,6 +70,7 @@ LANGS.each do |lang|
     sh [
         'light',
         '-ext WixUIExtension',
+        '-ext WixUtilExtension',
         "-cultures:#{lang[:name]}",
         "-loc #{wxl}",
         "-o #{t.name}",
