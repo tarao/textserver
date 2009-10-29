@@ -1,0 +1,88 @@
+= textserver
+
+*textserver* is a daemon to notify changes of text file via HTTP
+long-polling. It enables Firefox to synchronize contents of textarea
+or input element with an external file. You will be able to edit on
+Firefox using external text editors.
+
+== How to use it
+
+You need to have Firefox and Greasemonkey extension installed.
+
+1. Run Firefox.
+
+2. Install *textserver* daemon to your local machine. (see below)
+
+3. Add <tt>retrieve-remote-text.user.js</tt> to your Greasemonkey.
+
+4. Move focus on a textarea or an input.
+
+5. Write something to +text+ file and save it.
+
+6. You will get the textarea or the input synchronized with +text+ file.
+
+== Installation
+
+If you are using Windows, you can either install by the installer or
+use Ruby command as in other platforms.
+
+=== Using installer (Windows)
+
+Get the installer of the latest package from
+http://up.orezdnu.org/release/textserver.msi.
+
++text+ file will be accessible from your desktop (via a shortcut named
+<tt>textarea</tt>) and <tt>retrieve-remote-text.user.js</tt> can
+automatically be opened just after the setup.
+
+=== How to run with source code (all platforms)
+
+You need <b>Ruby 1.8.7</b>. After cloning the repository, don't forget to do
+
+  git submodule update --init
+
+1. Install Ruby modules listed below.
+
+2. Make directory _dir_ for the daemon.
+
+3. Write ':dir: <em>dir</em>' to a YAML file <em>config</em>.
+
+4. Run the daemon with specifying _config_ like 'ruby textserver.rb -c <em>config</em>'.
+
+You can stop the daemon by 'ruby textserver.rb -c <em>config</em> --stop'.
+
+==== Linux
+- <b>inotify</b> (optional)
+
+==== Windows
+- <b>rubygems</b> (required)
+- <b>win32/api</b> (required)
+- <b>win32/process</b> (required)
+- <b>win32/ipc</b> (optional)
+- <b>win32/event</b> (optional)
+- <b>win32/changenotify</b> (optional)
+
+== Build installer on Windows
+
+If you have all applications listed below, you can
+build the installer by the following command.
+
+  rake win32
+
+- <b>Rake</b>
+- <b>Exerb</b>
+- <b>Windows Installer XML (WiX) toolset</b>
+- <b>Microsoft Platform SDK</b>
+
+== Advanced feature
+
+If you are using emacs, try <tt>elisp/textarea.el</tt>. Put this file
+some where in your load path and write the following code to your
+<tt>.emacs</tt>.
+
+  (require 'textarea)
+  (setq textarea-dir "your-textserver-dir")
+
+Then, 'M-x textarea' opens +text+ as <tt>\*textarea*</tt> buffer with
+auto-save mode, 'M-x revert' on <tt>\*textarea*</tt> buffer retrieves
+content of the current textarea on the browser.
