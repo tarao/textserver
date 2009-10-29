@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" Codepage="1252"
+                 xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Product_Name">textserver</String>
+  <String Id="Product_Manufacturer">orezdnu.org</String>
+
+  <String Id="Package_Title">textserver installer</String>
+  <String Id="Package_Description">textserver installer</String>
+  <String Id="Package_Comments">Notify changes of text file via HTTP long-polling.</String>
+  <String Id="Package_Manufacturer">orezdnu.org</String>
+
+  <String Id="ProgramDaemon_Name">textserver</String>
+  <String Id="ProgramEditText_Name">textarea</String>
+  <String Id="DesktopEditText_Name">textarea</String>
+  <String Id="StartupDaemon_Name">textserver</String>
+
+  <String Id="FeatureDefault_Title">textserver</String>
+  <String Id="FeatureDefault_Description">The complete package.</String>
+  <String Id="FeatureMainExecutable_Title">daemon</String>
+  <String Id="FeatureMainExecutable_Description">The textserver daemon executable and settings.
+This feature is required.</String>
+  <String Id="FeatureShortcuts_Title">shortcuts</String>
+  <String Id="FeatureShortcuts_Description">Useful shortcuts.</String>
+  <String Id="FeatureProgram_Title">program</String>
+  <String Id="FeatureProgram_Description">Shortcut to the daemon and the text file in the program menu.</String>
+  <String Id="FeatureDesktop_Title">desktop</String>
+  <String Id="FeatureDesktop_Description">A shortcut to the text file on the desktop.</String>
+  <String Id="FeatureStartup_Title">startup</String>
+  <String Id="FeatureStartup_Description">Register textserver daemon to the startup menu.
+The daemon will automatically be running after the installation.</String>
+</WixLocalization>

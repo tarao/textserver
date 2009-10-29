@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Name="textserver"
+  <Product Name="!(loc.Product_Name)"
            Id="C5007942-A8DD-4d95-9D4C-716E6743594D"
            UpgradeCode="0D73194B-30C1-48ca-9D85-0900EC8D3CE7"
-           Language="1033" Codepage="1252" Version="1.0.0"
-           Manufacturer="orezdnu.org">
+           Language="$(var.language)" Codepage="$(var.codepage)"
+           Version="1.0.0" Manufacturer="!(loc.Product_Manufacturer)">
 
     <!-- Package -->
 
-    <Package Id="*" Keywords="Installer" Description="textserver installer"
-             Comments="Notify changes of text file via HTTP long-polling."
-             Manufacturer="orezdnu.org" InstallerVersion="100"
-             Languages="1033" Compressed="yes" SummaryCodepage="1252" />
+    <Package Id="*" Keywords="Installer"
+             Description="!(loc.Package_Description)"
+             Comments="!(loc.Package_Comments)"
+             Languages="$(var.language)" SummaryCodepage="$(var.codepage)"
+             Manufacturer="!(loc.Package_Manufacturer)" InstallerVersion="100"
+             Compressed="yes" />
     <Media Id="1" Cabinet="textserver.cab" EmbedCab="yes" />
 
     <!-- Directory -->
@@ -59,11 +61,11 @@
 
     <Component Id="ProgramMenuDir" Directory="ProgramMenuDir"
                Guid="C3A3E604-55DE-4615-86CF-18262D3D8BDF">
-      <Shortcut Id="ProgramDaemon" Name="textserver"
+      <Shortcut Id="ProgramDaemon" Name="!(loc.ProgramDaemon_Name)"
                 Target="[INSTALLDIR]textserver.exe"
                 WorkingDirectory="INSTALLDIR"
                 Icon="textserver.exe" IconIndex="0" />
-      <Shortcut Id="ProgramEditText" Name="textarea"
+      <Shortcut Id="ProgramEditText" Name="!(loc.ProgramEditText_Name)"
                 Target="[TempDir]text.txt"
                 WorkingDirectory="TempDir" />
       <RemoveFolder Id="ProgramMenuDir" On="uninstall" />
@@ -74,7 +76,7 @@
 
     <Component Id="Desktop" Directory="DesktopFolder"
                Guid="F24F02DC-54BE-4d3c-8F48-7AB6F00FE04B">
-      <Shortcut Id="DesktopEditText" Name="textarea"
+      <Shortcut Id="DesktopEditText" Name="!(loc.DesktopEditText_Name)"
                 Target="[TempDir]text.txt"
                 WorkingDirectory="TempDir" />
       <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]"
@@ -84,7 +86,7 @@
 
     <Component Id="Startup" Directory="StartupFolder"
                Guid="3044BA5B-2473-4326-AABA-9ED2D9C47710">
-      <Shortcut Id="StartupDaemon" Name="textserver"
+      <Shortcut Id="StartupDaemon" Name="!(loc.StartupDaemon_Name)"
                 Target="[INSTALLDIR]textserver.exe"
                 WorkingDirectory="INSTALLDIR"
                 Icon="textserver.exe" IconIndex="0" />
@@ -97,35 +99,41 @@
 
     <!-- Feature -->
 
-    <Feature Id="default" Title="textserver" Level="1"
-             Description="The complete package."
+    <Feature Id="default" Level="1"
+             Title="!(loc.FeatureDefault_Title)"
+             Description="!(loc.FeatureDefault_Description)"
              ConfigurableDirectory="INSTALLDIR"
              AllowAdvertise="no">
 
-      <Feature Id="MainExecutable" Title="daemon" Level="1"
-               Description="The textserver executable and settings."
+      <Feature Id="MainExecutable" Level="1"
+               Title="!(loc.FeatureMainExecutable_Title)"
+               Description="!(loc.FeatureMainExecutable_Description)"
                Absent="disallow" AllowAdvertise="no">
         <ComponentRef Id="MainExecutable" />
         <ComponentRef Id="TempDir" />
       </Feature>
 
-      <Feature Id="Shortcuts" Title="shortcuts" Level="1"
-               Description="Useful shortcuts."
+      <Feature Id="Shortcuts" Level="1"
+               Title="!(loc.FeatureShortcuts_Title)"
+               Description="!(loc.FeatureShortcuts_Description)"
                AllowAdvertise="no">
-        <Feature Id="Program" Title="program" Level="1"
-                 Description="Shortcuts in the program menu."
+        <Feature Id="Program" Level="1"
+                 Title="!(loc.FeatureProgram_Title)"
+                 Description="!(loc.FeatureProgram_Description)"
                  AllowAdvertise="no">
           <ComponentRef Id="ProgramMenuDir" />
         </Feature>
 
-        <Feature Id="Desktop" Title="desktop" Level="1"
-                 Description="A shortcut on the desktop to edit text."
+        <Feature Id="Desktop" Level="1"
+                 Title="!(loc.FeatureDesktop_Title)"
+                 Description="!(loc.FeatureDesktop_Description)"
                  AllowAdvertise="no">
           <ComponentRef Id="Desktop" />
         </Feature>
 
-        <Feature Id="Startup" Title="startup" Level="1"
-                 Description="Register textserver to the startup menu."
+        <Feature Id="Startup" Level="1"
+                 Title="!(loc.FeatureStartup_Title)"
+                 Description="!(loc.FeatureStartup_Description)"
                  AllowAdvertise="no">
           <ComponentRef Id="Startup" />
         </Feature>

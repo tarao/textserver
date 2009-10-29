@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="ja-jp" Codepage="932"
+                 xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Product_Name">textserver</String>
+  <String Id="Product_Manufacturer">orezdnu.org</String>
+
+  <String Id="Package_Title">textserverインストーラ</String>
+  <String Id="Package_Description">textserverインストーラ</String>
+  <String Id="Package_Comments">HTTP long-pollingを用いてテキストファイルの変更を通知。</String>
+  <String Id="Package_Manufacturer">orezdnu.org</String>
+
+  <String Id="ProgramDaemon_Name">textserver</String>
+  <String Id="ProgramEditText_Name">テキストを編集</String>
+  <String Id="DesktopEditText_Name">テキストを編集</String>
+  <String Id="StartupDaemon_Name">textserver</String>
+
+  <String Id="FeatureDefault_Title">textserver</String>
+  <String Id="FeatureDefault_Description">パッケージ全体。</String>
+  <String Id="FeatureMainExecutable_Title">実行ファイル</String>
+  <String Id="FeatureMainExecutable_Description">textserver実行ファイルと起動に必要な設定ファイルです。
+これらのファイルは必ずインストールされます。</String>
+  <String Id="FeatureShortcuts_Title">ショートカット</String>
+  <String Id="FeatureShortcuts_Description">各種ショートカット。</String>
+  <String Id="FeatureProgram_Title">プログラムメニュー</String>
+  <String Id="FeatureProgram_Description">実行ファイルとテキスト編集へのショートカットをプログラムメニューに表示します。</String>
+  <String Id="FeatureDesktop_Title">デスクトップ</String>
+  <String Id="FeatureDesktop_Description">テキスト編集へのショートカットをデスクトップに表示します。</String>
+  <String Id="FeatureStartup_Title">スタートアップ</String>
+  <String Id="FeatureStartup_Description">textserverをスタートアップに登録します。
+インストール終了後に自動的にtextserverを開始します。</String>
+</WixLocalization>
