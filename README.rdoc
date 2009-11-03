@@ -1,9 +1,9 @@
 = textserver
 
-*textserver* is a daemon to notify changes of text file via HTTP
-long-polling. It enables Firefox to synchronize contents of textarea
-or input element with an external file. You will be able to edit on
-Firefox using external text editors.
+*textserver* is a daemon to notify changes of a text file via HTTP
+long-polling. It enables Firefox to synchronize contents of textareas
+or input elements with an external file. You will be able to edit
+textareas on Firefox using an external text editor.
 
 == How to use it
 
@@ -27,6 +27,8 @@ If you are using Windows, you can either install by the installer or
 use Ruby command as in other platforms.
 
 === Using installer (Windows)
+
+A demo on YouTube: http://www.youtube.com/watch?v=7eI12gmzv6Y
 
 Get the installer of the latest package from
 http://up.orezdnu.org/release/textserver.msi.
@@ -64,8 +66,8 @@ You can stop the daemon by 'ruby textserver.rb -c <em>config</em> --stop'.
 
 == Build installer on Windows
 
-If you have all applications listed below, you can
-build the installer by the following command.
+If you have all applications listed below, you can build the installer
+by the following command.
 
   rake win32
 
@@ -76,13 +78,13 @@ build the installer by the following command.
 
 == Advanced feature
 
-If you are using emacs, try <tt>elisp/textarea.el</tt>. Put this file
-some where in your load path and write the following code to your
-<tt>.emacs</tt>.
+If you are using <b>GNU Emacs</b>, try <tt>elisp/textarea.el</tt>. Put
+this file some where in your load path and write the following code to
+your <tt>.emacs</tt>.
 
   (require 'textarea)
   (setq textarea-dir "your-textserver-dir")
 
 Then, 'M-x textarea' opens +text+ as <tt>\*textarea*</tt> buffer with
 auto-save mode, 'M-x revert' on <tt>\*textarea*</tt> buffer retrieves
-content of the current textarea on the browser.
+contents of the current textarea on the browser.
