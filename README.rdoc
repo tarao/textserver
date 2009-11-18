@@ -5,6 +5,8 @@ long-polling. It enables Firefox to synchronize contents of textareas
 or input elements with an external file. You will be able to edit
 textareas on Firefox using an external text editor.
 
+A guide in Japanese: http://d.hatena.ne.jp/tarao/20091105/1257463316
+
 == How to use it
 
 You need to have Firefox and Greasemonkey extension installed.
@@ -42,6 +44,7 @@ automatically be opened just after the setup.
 You need <b>Ruby 1.8.7</b>. After cloning the repository, don't forget to do
 
   git submodule update --init
+or download modules from http://github.com/tarao/rblibs.
 
 1. Install Ruby modules listed below.
 
