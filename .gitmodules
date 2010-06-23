@@ -1,3 +1,0 @@
-[submodule "modules/rblibs"]
-	path = modules/rblibs
-	url = git://github.com/tarao/gnn-rblibs.git
