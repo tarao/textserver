@@ -1,36 +1,138 @@
-(defvar textarea-dir "/var/textserver")
+(defgroup textarea nil
+  "Edit browser textarea."
+  :group 'applications)
 
+(defcustom textarea:dir "~/var/textserver"
+  "Directory to read/write textserver files."
+  :type 'directory
+  :group 'textarea)
+
+(defcustom textarea:text-file-name "text"
+  "Name of textserver text file."
+  :type 'string
+  :group 'textarea)
+
+(defcustom textarea:reset-file-name "reset"
+  "Name of textserver reset file."
+  :type 'string
+  :group 'textarea)
+
+(defcustom textarea:major-mode 'text-mode
+  "Major mode to use for textarea buffer."
+  :type 'function
+  :group 'textarea)
+
+(defcustom textarea:auto-save-timeout 1
+  "Seconds to wait before auto-saving textarea buffer."
+  :type '(choice number '(const :tag "Don't save" nil))
+  :group 'textarea)
+
+(defcustom textarea:no-auto-save-message t
+  "t means that no message is shown on auto-saving."
+  :type 'boolean
+  :group 'textarea)
+
+(defcustom textarea:no-buckup t
+  "t means not to make backup file."
+  :type 'boolean
+  :group 'textarea)
+
+(defconst textarea:buffer "*textarea*")
+
+(defsubst textarea:file (what)
+  (unless (file-exists-p textarea:dir) (make-directory textarea:dir t))
+  (expand-file-name (concat (file-name-as-directory textarea:dir) what)))
+
+(defsubst textarea:text-file ()
+  (textarea:file textarea:text-file-name))
+
+(defsubst textarea:reset-file ()
+  (textarea:file textarea:reset-file-name))
+
+(defvar textarea:auto-save-timer nil)
+
+;; minor mode for textarea
+
+(define-minor-mode textarea:local-mode
+  "Minor mode for textarea"
+  :group 'textarea
+  (textarea:stop-auto-save-timer)
+  (if textarea:local-mode
+      ;; on
+      (progn
+        (set-visited-file-name (textarea:text-file))
+        (set-buffer-modified-p nil)
+        (rename-buffer textarea:buffer)
+        (if textarea:auto-save-timeout
+            (progn
+              (set (make-local-variable 'auto-save-visited-file-name) t)
+              (set (make-local-variable 'auto-save-timeout) nil)
+              (auto-save-mode 1)
+              (textarea:start-auto-save-timer))
+          (auto-save-mode -1)
+          (set (make-local-variable 'auto-save-default) nil))
+        (set (make-local-variable 'make-backup-files) (not textarea:no-buckup))
+        (add-hook 'after-revert-hook #'textarea:restore-local-mode nil t)
+        (add-hook 'after-change-major-mode-hook
+                  #'textarea:restore-local-mode nil t)
+        (set (make-local-variable 'revert-buffer-function) 'textarea:reset))
+    ;; off
+    (remove-hook 'after-revert-hook #'textarea:restore-local-mode t)
+    (remove-hook 'after-change-major-mode-hook #'textarea:restore-local-mode t)
+    (kill-local-variable 'auto-save-visited-file-name)
+    (kill-local-variable 'auto-save-timeout)
+    (kill-local-variable 'auto-save-default)
+    (kill-local-variable 'make-backup-files)
+    (kill-local-variable 'revert-buffer-function)))
+
+(defun textarea:restore-local-mode ()
+  "Re-enable `textarea:local-mode'."
+  (when (or (and (numberp textarea:local-mode)
+                 (<= textarea:local-mode 0))
+            (null textarea:local-mode))
+    (textarea:local-mode 1)))
+(put 'textarea:restore-local-mode 'permanent-local-hook t)
+
+(defun textarea:reset (&rest ignore)
+  "Reset textarea buffer."
+  (interactive)
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    (when (file-exists-p (textarea:reset-file))
+      (insert-file-contents (textarea:reset-file)))))
+
+;; auto-save timer
+
+(defun textarea:start-auto-save-timer ()
+  (unless textarea:auto-save-timer
+    (run-with-idle-timer textarea:auto-save-timeout t #'textarea:auto-save)))
+
+(defun textarea:stop-auto-save-timer ()
+  (when textarea:auto-save-timer
+    (cancel-timer textarea:auto-save-timer)
+    (setq textarea:auto-save-timer nil)))
+
+(defun textarea:auto-save ()
+  (let ((buffer (get-buffer textarea:buffer)))
+    (if (and buffer (buffer-live-p buffer))
+        (with-current-buffer buffer
+          (do-auto-save textarea:no-auto-save-message t))
+      (textarea:stop-auto-save-timer))))
+
+;; commands
+
+;;;###autoload
 (defun textarea ()
+  "Edit browser textarea."
   (interactive)
-  (find-file (mapconcat 'identity (list textarea-dir "text") "/"))
-  (funcall initial-major-mode)
-  (make-variable-buffer-local 'make-backup-files)
-  (setq make-backup-files nil)
-  (auto-save-mode 0)
-  (rename-buffer "*textarea*"))
-
-(defun textarea-auto-save-buffer ()
-  (interactive)
-  (let ((buffer (get-buffer "*textarea*")))
-    (when buffer
-      (save-excursion
-        (set-buffer buffer)
-        (if (and buffer-file-name
-                 (buffer-modified-p)
-                 (not buffer-read-only)
-                 (file-writable-p buffer-file-name))
-            (save-buffer))))))
-(run-with-idle-timer 3 t 'textarea-auto-save-buffer)
-
-(defun textarea-import ()
-  (interactive)
-  (textarea)
-  (kill-region (point-min) (point-max))
-  (insert-file-contents (mapconcat
-                         'identity (list textarea-dir "reset") "/")))
-
-(defadvice revert-buffer
-  (around textarea-revert first activate)
-  (if (string= (buffer-name) "*textarea*") (textarea-import) ad-do-it))
+  (let ((buffer (get-buffer-create textarea:buffer)))
+    (with-current-buffer buffer
+      (erase-buffer)
+      (when (file-exists-p (textarea:text-file))
+        (insert-file-contents (textarea:text-file)))
+      (when (fboundp textarea:major-mode) (funcall textarea:major-mode))
+      (goto-char (point-min))
+      (textarea:local-mode 1))
+    (switch-to-buffer buffer)))
 
 (provide 'textarea)
