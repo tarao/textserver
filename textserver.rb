@@ -1,6 +1,8 @@
 #! /usr/bin/env ruby
-$:.unshift(File.dirname($0))
-$:.unshift(File.join(File.dirname($0), 'lib'))
+$dir = File.dirname($0)
+$dir = File.dirname(File.readlink($0)) if File.symlink?($0)
+$:.unshift($dir)
+$:.unshift(File.join($dir, 'lib'))
 require 'webrick'
 require 'time'
 require 'open-uri'
@@ -16,6 +18,7 @@ require 'rbconfig/command'
 require 'net/http'
 
 $p = RbConfig.program_name
+$p = File.readlink($p) if File.symlink?($p)
 
 class String
   def to_utf8
