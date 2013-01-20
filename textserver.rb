@@ -13,6 +13,7 @@ require 'getopt'
 require 'file/observer'
 require 'process/invoke'
 require 'rbconfig/command'
+require 'net/http'
 
 $p = RbConfig.program_name
 
@@ -28,6 +29,7 @@ dargv = {
   :config => File.join(File.dirname($p), "#{File.basename($p, '.*')}.yml"),
 }
 argv = GetOpt.new($*, %w'
+  status
   stop
   reset
   test
@@ -40,6 +42,7 @@ Usage: #{File.basename($p)} [-h] [-c config] [--stop]
 A daemon for synchronize contents of textarea in a browser with that of a file.
 Options:
   -c, --config    Configuration file.
+  --status        Check if daemon is running.
   --stop          Stop daemon.
   -h, --help      Show help.
 Default Configuration File:
@@ -103,6 +106,29 @@ if argv[:stop]
   exit
 end
 
+# status method
+
+def status_check(host, port)
+  res = Net::HTTP.get_response(host, '/status', port) rescue nil
+  return res && res.code.to_i == 200
+end
+
+argv[:status] = argv[:status] || (argv.args + argv.rest).include?('status')
+if argv[:status]
+  pids = IO.foreach($conf[:pid]).map(&:strip).reject(&:empty?).map(&:to_i)
+  status = pids.length > 0 && pids.all? do |pid|
+    Process.getpgid(pid) rescue nil
+  end
+
+  if status && status_check('localhost', $conf[:server][:Port]+1)
+    puts('running')
+    exit
+  else
+    puts('not running')
+    exit(1)
+  end
+end
+
 # daemon
 
 if argv[:reset]
@@ -160,6 +186,12 @@ srv.mount_proc('/reset') do |req, res|
   else
     FileUtils.touch($reset)
   end
+  res.content_type = 'text/plain; charset=utf-8'
+  res.status = WEBrick::HTTPStatus::RC_OK
+end
+
+srv.mount_proc('/status') do |req, res|
+  res.body = 'running'
   res.content_type = 'text/plain; charset=utf-8'
   res.status = WEBrick::HTTPStatus::RC_OK
 end
