@@ -1,6 +1,7 @@
 #! /usr/bin/env ruby
 $dir = File.dirname($0)
 $dir = File.dirname(File.readlink($0)) if File.symlink?($0)
+$dir = File.expand_path($dir, File.dirname($0))
 $:.unshift($dir)
 $:.unshift(File.join($dir, 'lib'))
 require 'webrick'
@@ -19,6 +20,7 @@ require 'net/http'
 
 $p = RbConfig.program_name
 $p = File.readlink($p) if File.symlink?($p)
+$p = File.expand_path($p, File.dirname(RbConfig.program_name))
 
 class String
   def to_utf8
