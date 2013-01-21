@@ -33,6 +33,7 @@ dargv = {
 }
 argv = GetOpt.new($*, %w'
   status
+  start
   stop
   reset
   test
@@ -46,6 +47,7 @@ A daemon for synchronize contents of textarea in a browser with that of a file.
 Options:
   -c, --config    Configuration file.
   --status        Check if daemon is running.
+  --start         Start daemon.
   --stop          Stop daemon.
   -h, --help      Show help.
 Default Configuration File:
@@ -97,6 +99,16 @@ open($text,'wb'){|io|} unless File.exist?($text)
 $reset = File.join($conf[:dir], $conf[:reset])
 open($reset, 'wb'){|io|} unless File.exist?($reset)
 $last = ''
+
+# start method
+
+argv[:start] = argv[:start] || (argv.args + argv.rest).include?('start')
+if argv[:start]
+  server = [ RbConfig.self_invoke_command ]
+  server += [ '-c', argv[:config].sub(/.*\s.*/m,'"\&"') ] if argv[:config]
+  Process.invoke(server.join(' '))
+  exit
+end
 
 # stop method
 
