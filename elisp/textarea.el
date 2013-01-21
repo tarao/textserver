@@ -141,7 +141,8 @@
 (defsubst textarea:server-program (&optional bin)
   (let ((program (or bin (executable-find textarea:server-program))))
     (unless (and program (file-executable-p program))
-      (error "No such server program '%s'" program))
+      (error "No such server program '%s'"
+             (or program textarea:server-program)))
     program))
 
 (defun textarea:server-running-p (&optional bin)
