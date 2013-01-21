@@ -135,4 +135,32 @@
       (textarea:local-mode 1))
     (switch-to-buffer buffer)))
 
+;; server
+
+(defconst textarea:server-program "textserver.rb")
+(defsubst textarea:server-program (&optional bin)
+  (let ((program (or bin (executable-find textarea:server-program))))
+    (unless (and program (file-executable-p program))
+      (error "No such server program '%s'" program))
+    program))
+
+(defun textarea:server-running-p (&optional bin)
+  "Check if textserver is running."
+  (let ((bin (textarea:server-program bin)))
+    (= 0 (call-process bin nil nil nil "--status"))))
+
+(defun textarea:start-server (&optional bin)
+  "Start textserver."
+  (interactive)
+  (let* ((bin (textarea:server-program bin))
+         (cmd (format "%s --start >/dev/null 2>&1" bin)))
+    (unless (textarea:server-running-p bin)
+      (call-process "/bin/sh" nil nil nil "-c" cmd))))
+
+(defun textarea:stop-server (&optional bin)
+  "Stop textserver."
+  (interactive)
+  (let ((bin (textarea:server-program bin)))
+    (call-process bin nil nil nil "--stop")))
+
 (provide 'textarea)
