@@ -41,7 +41,8 @@ automatically be opened just after the setup.
 
 === How to run with source code (all platforms)
 
-You need <b>Ruby 1.8.7</b>. After cloning the repository, don't forget to do
+You need <b>Ruby 1.8.7</b> or later. After cloning the repository,
+don't forget to do
 
   git submodule update --init
 or install modules from http://github.com/tarao/gnn-rblibs.
@@ -89,7 +90,7 @@ this file some where in your load path and write the following code to
 your <tt>.emacs</tt>.
 
   (require 'textarea)
-  (setq textarea-dir "your-textserver-dir")
+  (setq textarea:dir "your-textserver-dir")
 
 Then, 'M-x textarea' opens +text+ as <tt>\*textarea*</tt> buffer with
 auto-save mode, 'M-x revert' on <tt>\*textarea*</tt> buffer retrieves
