@@ -116,7 +116,8 @@
   (let ((buffer (get-buffer textarea:buffer)))
     (if (and buffer (buffer-live-p buffer))
         (with-current-buffer buffer
-          (do-auto-save textarea:no-auto-save-message t))
+          (do-auto-save textarea:no-auto-save-message t)
+          (clear-visited-file-modtime))
       (textarea:stop-auto-save-timer))))
 
 ;; commands
